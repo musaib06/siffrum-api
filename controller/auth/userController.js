@@ -5,116 +5,111 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../../middlewares/auth/auth.js";
+import { sendSuccess, sendError } from "../../Helper/response.helper.js";
 
+// REGISTER
 export const registerController = async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const { reqData } = req.body;
+  const { username, email, password, role } = reqData;
 
   const validRoles = ["superAdmin", "Vendor", "endUser", "Researcher"];
   if (!role || !validRoles.includes(role)) {
-    return res.status(400).json("Invalid or missing role");
+    return sendError(res, "Invalid or missing role", 400);
   }
-
-  const existUser = await User.findOne({ where: { username } });
-  if (existUser != null) {
-    return res.status(409).json("User already exists");
-  }
-
-  const hashedPass = await bcryptjs.hash(password, 10);
 
   try {
-    const user = await User.create({
+    const existUser = await User.findOne({ where: { username } });
+    if (existUser) return sendError(res, "User already exists", 409);
+
+    const hashedPass = await bcryptjs.hash(password, 10);
+ const user = await User.create({
+  username,
+  email,
+  password: hashedPass,
+  role,
+  createdBy: req.user?.id || null,
+  lastModifiedBy: req.user?.id || null,
+});
+
+    return sendSuccess(res, {
       username,
       email,
-      password: hashedPass,
-      role,
-    });
-
-    return res.status(201).json({
-      message: "User signed in",
-      userData: {
-        username,
-        email,
-        role: user.role,
-      },
-    });
+      role: user.role,
+    }, 201);
   } catch (error) {
-    return res
-      .status(500)
-      .json({ error: "Something went wrong", detail: error.message });
+    return sendError(res, error.message);
   }
 };
 
+// LOGIN
 export const loginController = async (req, res) => {
-  const { username, password } = req.body;
+  const { reqData } = req.body;
+  const { username, password } = reqData;
 
   try {
-    const exist = await User.findOne({ where: { username } });
-    if (!exist) {
-      return res.status(404).json("User does not exist");
-    }
+    const user = await User.findOne({ where: { username } });
+    if (!user) return sendError(res, "User does not exist", 404);
 
-    const isValid = await bcryptjs.compare(password, exist.password); // FIXED: Added await
-    if (!isValid) {
-      return res.status(401).json("Invalid credentials");
-    }
+    const isValid = await bcryptjs.compare(password, user.password);
+    if (!isValid) return sendError(res, "Invalid credentials", 401);
 
-    const accessToken = await generateAccessToken(exist.dataValues);
-    const refereshToken = await generateRefreshToken(exist.dataValues);
-    await exist.update({ refereshToken });
+    const accessToken = await generateAccessToken(user.dataValues);
+    const refereshToken = await generateRefreshToken(user.dataValues);
+    await user.update({ refereshToken });
 
     res.cookie("refereshToken", refereshToken, {
       httpOnly: true,
       secure: true,
     });
-    return res.status(200).json({
-      message: "User logged in",
-      userData: {
-        username: exist.dataValues.username,
-        role: exist.dataValues.role, // <-- Include role in response
-        accessToken,
-        refereshToken,
-      },
+
+    return sendSuccess(res, {
+      username: user.username,
+      role: user.role,
+      accessToken,
+      refereshToken,
     });
-  } catch (e) {
-    console.error("Internal Error", e);
-    res.status(500).json("Internal Error");
+  } catch (error) {
+    return sendError(res, "Internal Error");
   }
 };
 
+// REFRESH TOKEN
 export const refreshController = async (req, res) => {
   const refreshToken = req.cookies.refereshToken;
-  //console.log(refreshToken)
+  if (!refreshToken) return sendError(res, "Token is empty", 403);
+
   try {
-    if (!refreshToken) {
-      return res.status(403).json("token is empty");
-    }
     const user = await User.findOne({ where: { refereshToken: refreshToken } });
-    //console.log("ddddddddddd",user)
+    if (!user) return sendError(res, "User not found", 403);
+
     jwt.verify(refreshToken, "cdef", async (error, decoded) => {
-      if (error) {
-        return res.status(403).json("Invalid token");
-      }
-      const token = await generateAccessToken(user.dataValues);
-      return res.status(200).json({ accessToken: token });
+      if (error) return sendError(res, "Invalid token", 403);
+
+      const accessToken = await generateAccessToken(user.dataValues);
+      return sendSuccess(res, { accessToken });
     });
   } catch (e) {
-    return res.status(500).json("Intrnal Error");
+    return sendError(res, "Internal Error");
   }
 };
 
+// LOGOUT
 export const logoutController = async (req, res) => {
   const refreshToken = req.cookies.refereshToken;
-  if (!refreshToken) {
-    return res.status(403).json("token is empty");
+  if (!refreshToken) return sendError(res, "Token is empty", 403);
+
+  try {
+    const user = await User.findOne({ where: { refereshToken: refreshToken } });
+    if (user) await user.update({ refereshToken: null });
+
+    res.clearCookie("refereshToken");
+    return sendSuccess(res, { message: "Logged out successfully" });
+  } catch (e) {
+    return sendError(res, "Internal Error");
   }
-  const user = await User.findOne({ where: { refereshToken: refreshToken } });
-  if (user != null) {
-    user.update({ refereshToken: null });
-  }
-  res.clearCookie("refereshToken");
-  return res.status(200).json("logout successfully");
 };
 
+// PROFILE (Example Protected Route)
 export const profileController = async (req, res) => {
-  return res.json("Dashboard");
+  return sendSuccess(res, { message: "Dashboard" });
 };

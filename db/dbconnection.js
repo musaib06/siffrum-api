@@ -1,8 +1,10 @@
 import { Sequelize } from "sequelize";
 import createUserModel from "../model/userModel.js";
 import createLicenseModel from "../model/licences.model.js";
+import createModuleModel from "../model/module.model.js";
 let User = null;
 let License = null;
+let Module = null;
 export const dbConnection = async (database, username, password) => {
   const sequelize = new Sequelize(database, username, password, {
     host: "localhost",
@@ -12,6 +14,7 @@ export const dbConnection = async (database, username, password) => {
     await sequelize.authenticate();
     User = await createUserModel(sequelize);
     License= await createLicenseModel(sequelize);
+    Module= await createModuleModel(sequelize);
     await sequelize.sync({alter:true});
     console.log('Connection has been established successfully.');
   } catch (error) {
@@ -19,4 +22,4 @@ export const dbConnection = async (database, username, password) => {
   }
 };
 
-export {User,License}
+export {User,License,Module};

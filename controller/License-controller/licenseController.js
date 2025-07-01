@@ -1,62 +1,77 @@
 import { License } from "../../db/dbconnection.js";
+import { sendSuccess, sendError } from '../../Helper/response.helper.js';
 // const License = db.License;
 
 // CREATE License
 export const createLicense = async (req, res) => {
   try {
-    const newLicense = await License.create({
-      ...req.body,
-      createdBy: req.user.id,
-    });
-    res.status(201).json(newLicense);
+    const { reqData } = req.body;
+ const newLicense = await License.create({
+  ...reqData,
+  createdBy: req.user?.id || null,
+  lastModifiedBy: req.user?.id || null,
+});
+    return sendSuccess(res, newLicense, 201);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, error.message);
   }
 };
+
 
 // GET All Licenses
 export const getAllLicenses = async (req, res) => {
   try {
-    const licenses = await License.findAll();
-    res.status(200).json(licenses);
+    const skip = parseInt(req.query.skip) || 0;
+    const top = parseInt(req.query.top) || 10;
+
+    const licenses = await License.findAll({ offset: skip, limit: top });
+    return sendSuccess(res, licenses);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, error.message);
   }
 };
+
 
 // GET License by ID
 export const getLicenseById = async (req, res) => {
   try {
     const license = await License.findByPk(req.params.id);
-    if (!license) return res.status(404).json({ message: "License not found" });
-    res.status(200).json(license);
+    if (!license) return sendError(res, "License not found", 404);
+    return sendSuccess(res, license);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, error.message);
   }
 };
+
 
 // UPDATE License
 export const updateLicense = async (req, res) => {
   try {
+    const { reqData } = req.body;
     const license = await License.findByPk(req.params.id);
-    if (!license) return res.status(404).json({ message: "License not found" });
+    if (!license) return sendError(res, "License not found", 404);
 
-    await license.update(req.body);
-    res.status(200).json({ message: "License updated", license });
+    await license.update({
+  ...reqData,
+  lastModifiedBy: req.user?.id || null,
+});
+    return sendSuccess(res, license);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, error.message);
   }
 };
+
 
 // DELETE License
 export const deleteLicense = async (req, res) => {
   try {
     const license = await License.findByPk(req.params.id);
-    if (!license) return res.status(404).json({ message: "License not found" });
+    if (!license) return sendError(res, "License not found", 404);
 
     await license.destroy();
-    res.status(200).json({ message: "License deleted" });
+    return sendSuccess(res, { message: "License deleted" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, error.message);
   }
 };
+
