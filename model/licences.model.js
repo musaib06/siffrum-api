@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 
-const createLicenseModel = (sequelize) => {
-  const License = sequelize.define("License", {
+const createLicensesModel = (sequelize) => {
+  const License = sequelize.define("Licenses", {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -53,4 +53,4 @@ const createLicenseModel = (sequelize) => {
   return License;
 };
 
-export default createLicenseModel;
+export default createLicensesModel;

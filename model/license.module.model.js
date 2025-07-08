@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 
-const createModuleModel = (sequelize) => {
-  const Module = sequelize.define('Module', {
+const createLicenseModuleModel = (sequelize) => {
+  const LicenseModule = sequelize.define('LicenseModules', {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -11,14 +11,19 @@ const createModuleModel = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Licenses', // matches your License model table name
+        model: 'Licenses',
         key: 'id',
       },
       onDelete: 'CASCADE',
     },
-    name: {
-      type: DataTypes.STRING,
+    moduleId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: 'Modules',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
     },
     canRead: {
       type: DataTypes.BOOLEAN,
@@ -54,11 +59,12 @@ const createModuleModel = (sequelize) => {
     updatedAt: 'lastModifiedOnUTC',
     indexes: [
       { fields: ['licenseId'] },
-      { fields: ['name'] },
+      { fields: ['moduleId'] },
+      { unique: true, fields: ['licenseId', 'moduleId'] } // ✅ Unique pair constraint
     ],
   });
 
-  return Module;
+  return LicenseModule;
 };
 
-export default createModuleModel;
+export default createLicenseModuleModel;

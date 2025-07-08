@@ -30,7 +30,15 @@ export const getAllLicenses = async (req, res) => {
     return sendError(res, error.message);
   }
 };
-
+// GET Total Banner Count
+export const getTotalLicenseCount = async (req, res) => {
+  try {
+    const count = await License.count();
+    return sendSuccess(res, count); // send as number
+  } catch (error) {
+    return sendError(res, error.message);
+  }
+};
 
 // GET License by ID
 export const getLicenseById = async (req, res) => {
@@ -65,13 +73,23 @@ export const updateLicense = async (req, res) => {
 // DELETE License
 export const deleteLicense = async (req, res) => {
   try {
-    const license = await License.findByPk(req.params.id);
+    const licenseId = req.params.id || req.body?.id;
+
+    if (!licenseId) {
+      return sendError(res, "License ID is required", 400);
+    }
+
+    console.log("Deleting license ID:", licenseId);
+
+    const license = await License.findByPk(licenseId);
     if (!license) return sendError(res, "License not found", 404);
 
     await license.destroy();
     return sendSuccess(res, { message: "License deleted" });
   } catch (error) {
-    return sendError(res, error.message);
+    console.error("Error deleting license:", error);
+    return sendError(res, error.message || "Internal Server Error");
   }
 };
+
 

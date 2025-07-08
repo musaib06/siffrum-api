@@ -93,14 +93,36 @@ export const getBannersByType = async (req, res) => {
 
 
 // DELETE Banner
+// export const deleteBanner = async (req, res) => {
+//   try {
+//     const banner = await Banner.findByPk(req.params.id);
+//     if (!banner) return sendError(res, false, 404); // false if banner not found
+
+//     await banner.destroy();
+//     return sendSuccess(res, true); // true on successful delete
+//   } catch (error) {
+//     return sendError(res, false); // false on error
+//   }
+// };
+
+// DELETE License
 export const deleteBanner = async (req, res) => {
   try {
-    const banner = await Banner.findByPk(req.params.id);
-    if (!banner) return sendError(res, false, 404); // false if banner not found
+    const bannerId = req.params.id || req.body?.id;
+
+    if (!bannerId) {
+      return sendError(res, "banner ID is required", 400);
+    }
+
+    console.log("Deleting banner ID:", bannerId);
+
+    const banner = await Banner.findByPk(bannerId);
+    if (!banner) return sendError(res, "banner not found", 404);
 
     await banner.destroy();
-    return sendSuccess(res, true); // true on successful delete
+    return sendSuccess(res, { message: "banner deleted" });
   } catch (error) {
-    return sendError(res, false); // false on error
+    console.error("Error deleting banner:", error);
+    return sendError(res, error.message || "Internal Server Error");
   }
 };
