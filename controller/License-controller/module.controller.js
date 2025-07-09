@@ -9,6 +9,7 @@ export const createModule = async (req, res) => {
     const newModule = await Module.create({
       ...reqData,
       createdBy: req.user?.id || null,
+      lastModifiedBy: req.user?.id || null,
     });
 
     return sendSuccess(res, newModule, 201);
@@ -30,12 +31,21 @@ export const getAllModules = async (req, res) => {
   }
 };
 
+// GET Total Module Count
+export const getTotalModuleCount = async (req, res) => {
+  try {
+    const count = await Module.count();
+    return sendSuccess(res, count);
+  } catch (error) {
+    return sendError(res, error.message);
+  }
+};
+
 // GET Module by ID
 export const getModuleById = async (req, res) => {
   try {
     const module = await Module.findByPk(req.params.id);
     if (!module) return sendError(res, "Module not found", 404);
-
     return sendSuccess(res, module);
   } catch (error) {
     return sendError(res, error.message);
@@ -64,7 +74,11 @@ export const updateModule = async (req, res) => {
 // DELETE Module
 export const deleteModule = async (req, res) => {
   try {
-    const module = await Module.findByPk(req.params.id);
+    const moduleId = req.params.id || req.body?.id;
+
+    if (!moduleId) return sendError(res, "Module ID is required", 400);
+
+    const module = await Module.findByPk(moduleId);
     if (!module) return sendError(res, "Module not found", 404);
 
     await module.destroy();
@@ -73,23 +87,3 @@ export const deleteModule = async (req, res) => {
     return sendError(res, error.message);
   }
 };
-
-// GET Modules by License ID
-export const getModulesByLicenseId = async (req, res) => {
-  try {
-    const licenseId = req.params.licenseId;
-
-    const modules = await Module.findAll({
-      where: { licenseId },
-    });
-
-    if (!modules || modules.length === 0) {
-      return sendError(res, "No modules found for this license", 404);
-    }
-
-    return sendSuccess(res, modules);
-  } catch (error) {
-    return sendError(res, error.message);
-  }
-};
-

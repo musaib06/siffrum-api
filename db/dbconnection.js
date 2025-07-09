@@ -1,9 +1,9 @@
 import { Sequelize } from "sequelize";
 import createUserModel from "../model/userModel.js";
-import createLicenseModel from "../model/licences.model.js";
+import createLicenseModel from "../model/licenses.model.js";
 import createModulesModel from "../model/modules.model.js";
 import createBannerModel from "../model/banner.model.js";
-import createLicenseModuleModel from "../model/license.module.model.js";
+import createLicenseModuleModel from "../model/license_module.model.js";
 import createUserInvoiceModel from "../model/user.invoices.model.js";
 import createUserLicenseDetailsModel from "../model/user.license.details.model.js";
 let User = null;

@@ -1,32 +1,22 @@
 import express from "express";
 import {
-  createModule,
+ createModule,
   getAllModules,
   getModuleById,
   updateModule,
   deleteModule,
-    getModulesByLicenseId,
+  getTotalModuleCount
 } from "../../controller/License-controller/module.controller.js";
 
 import { authenticateToken } from "../../middlewares/auth/auth.js";
 
 const router = express.Router();
 
-// CREATE
-router.post("/", authenticateToken, createModule);
-
-// GET ALL with pagination
-router.get("/", getAllModules);
-
-// GET BY ID
-router.get("/:id", getModuleById);
-
-// UPDATE
-router.put("/:id",authenticateToken, updateModule);
-
-// DELETE
-router.delete("/:id",authenticateToken, deleteModule);
-// GET Modules by License ID
- router.get("/by-license/:licenseId", authenticateToken, getModulesByLicenseId);
+router.post("/create",authenticateToken, createModule);
+router.get("/getall",authenticateToken, getAllModules);
+router.get("/count",authenticateToken, getTotalModuleCount);
+router.get("/getbyid/:id",authenticateToken, getModuleById);
+router.put("/update/:id",authenticateToken, updateModule);
+router.delete("/delete/:id",authenticateToken, deleteModule);
 
 export default router;
