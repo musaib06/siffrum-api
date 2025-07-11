@@ -33,10 +33,12 @@ app.use(process.env.BASE_URL, router);
 app.use(`${process.env.BASE_URL}/license`, licenseRouter);
 app.use(`${process.env.BASE_URL}/module`, moduleRouter);
 app.use(`${process.env.BASE_URL}/banner`, bannerRoute);
-
+app.get("/", (req, res) => {
+  res.send("Welcome to Siffrum API");
+});
 // Database connection
 dbConnection(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS);
 // Start the server
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT || 3000, () => {
   console.log(`Server is running at port ${process.env.PORT}`);
 });
