@@ -1,6 +1,5 @@
 import { Banner } from "../../db/dbconnection.js";
 import { sendSuccess, sendError } from "../../Helper/response.helper.js";
-
 // CREATE Banner (Admin Only)
 export const createBanner = async (req, res) => {
   try {
@@ -19,6 +18,10 @@ export const createBanner = async (req, res) => {
     return sendError(res, error.message);
   }
 };
+
+// UPDATE Banner
+// Note: This function is used to update an existing banner
+// It checks if the banner exists and updates it with the provided data
 
 export const updateBanner = async (req, res) => {
   try {
@@ -39,6 +42,8 @@ export const updateBanner = async (req, res) => {
 };
 
 // GET All Banners with Pagination
+
+
 export const getAllBanners = async (req, res) => {
   try {
     const skip = parseInt(req.query.skip) || 0;
@@ -89,23 +94,7 @@ export const getBannersByType = async (req, res) => {
   }
 };
 
-// UPDATE Banner
-
-
-// DELETE Banner
-// export const deleteBanner = async (req, res) => {
-//   try {
-//     const banner = await Banner.findByPk(req.params.id);
-//     if (!banner) return sendError(res, false, 404); // false if banner not found
-
-//     await banner.destroy();
-//     return sendSuccess(res, true); // true on successful delete
-//   } catch (error) {
-//     return sendError(res, false); // false on error
-//   }
-// };
-
-// DELETE License
+// DELETE Banner by ID
 export const deleteBanner = async (req, res) => {
   try {
     const bannerId = req.params.id || req.body?.id;

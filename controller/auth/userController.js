@@ -44,7 +44,7 @@ export const registerController = async (req, res) => {
 // LOGIN
 export const loginController = async (req, res) => {
   const { reqData } = req.body;
-  const { username, password } = reqData;
+  const { username, password, role } = reqData;
 
   try {
     const user = await User.findOne({ where: { username } });
@@ -52,6 +52,11 @@ export const loginController = async (req, res) => {
 
     const isValid = await bcryptjs.compare(password, user.password);
     if (!isValid) return sendError(res, "Invalid credentials", 401);
+
+    // Optional strict role check
+    if (role && user.role !== role) {
+      return sendError(res, "Invalid role", 403); // Forbidden
+    }
 
     const accessToken = await generateAccessToken(user.dataValues);
     const refereshToken = await generateRefreshToken(user.dataValues);
@@ -72,6 +77,7 @@ export const loginController = async (req, res) => {
     return sendError(res, "Internal Error");
   }
 };
+
 
 // REFRESH TOKEN
 export const refreshController = async (req, res) => {
