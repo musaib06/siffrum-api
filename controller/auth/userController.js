@@ -12,9 +12,9 @@ export const registerController = async (req, res) => {
   const { reqData } = req.body;
   const { username, email, password, role } = reqData;
 
-  const validRoles = ["superAdmin", "Vendor", "endUser", "Researcher"];
+  const validRoles = ["superAdmin", "Vendor", "endUser", "culturerContributor"];
   if (!role || !validRoles.includes(role)) {
-    return sendError(res, "Invalid or missing role", 400);
+    return sendError(res, "User Not Found", 404);
   }
 
   try {
@@ -22,20 +22,24 @@ export const registerController = async (req, res) => {
     if (existUser) return sendError(res, "User already exists", 409);
 
     const hashedPass = await bcryptjs.hash(password, 10);
- const user = await User.create({
-  username,
-  email,
-  password: hashedPass,
-  role,
-  createdBy: req.user?.id || null,
-  lastModifiedBy: req.user?.id || null,
-});
-
-    return sendSuccess(res, {
+    const user = await User.create({
       username,
       email,
-      role: user.role,
-    }, 201);
+      password: hashedPass,
+      role,
+      createdBy: req.user?.role || null,
+      lastModifiedBy: req.user?.role || null,
+    });
+
+    return sendSuccess(
+      res,
+      {
+        username,
+        email,
+        role: user.role,
+      },
+      201
+    );
   } catch (error) {
     return sendError(res, error.message);
   }
@@ -51,11 +55,11 @@ export const loginController = async (req, res) => {
     if (!user) return sendError(res, "User does not exist", 404);
 
     const isValid = await bcryptjs.compare(password, user.password);
-    if (!isValid) return sendError(res, "Invalid credentials", 401);
+    if (!isValid) return sendError(res, "User does not exist", 404);
 
     // Optional strict role check
     if (role && user.role !== role) {
-      return sendError(res, "Invalid role", 403); // Forbidden
+      return sendError(res, "User does not exist", 404); // Forbidden
     }
 
     const accessToken = await generateAccessToken(user.dataValues);
@@ -77,7 +81,6 @@ export const loginController = async (req, res) => {
     return sendError(res, "Internal Error");
   }
 };
-
 
 // REFRESH TOKEN
 export const refreshController = async (req, res) => {

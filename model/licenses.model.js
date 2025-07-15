@@ -27,7 +27,7 @@ const createLicensesModel = (sequelize) => {
       comment: "Validity period in days",
     },
     role: {
-      type: DataTypes.ENUM("VendorLicense", "ResearcherLicense"),
+      type: DataTypes.ENUM("VendorLicense", "culturerContributorLicense"),
       allowNull: false,
     },
     isActive: {

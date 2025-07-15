@@ -27,7 +27,7 @@ const createUserModel = (sequelize) => {
       allowNull: true,
     },
     role: {
-      type: DataTypes.ENUM("superAdmin", "Vendor", "endUser", "Researcher"),
+      type: DataTypes.ENUM("superAdmin", "Vendor", "endUser", "culturerContributor"),
       allowNull: false,
       defaultValue: "endUser",
     },
