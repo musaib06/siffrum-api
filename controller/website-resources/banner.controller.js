@@ -10,7 +10,7 @@ export const createBanner = async (req, res) => {
 
     const newBanner = await Banner.create({
       ...reqData,
-      createdBy: req.user?.role || null,
+      createdBy: req.user?.id || null,
     });
 
     return sendSuccess(res, newBanner, 201);
@@ -32,7 +32,7 @@ export const updateBanner = async (req, res) => {
 
     await banner.update({
       ...reqData,
-      lastModifiedBy: req.user?.role || null,
+      lastModifiedBy: req.user?.id || null,
     });
 
     return sendSuccess(res, banner);
